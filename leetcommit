@@ -1,8 +1,10 @@
 #!/bin/sh
-# NOTE: depends on jq. should run on bash & zsh 
+# NOTE: depends on jq. this should run on bash & zsh 
 
 repo_path="$HOME/programming/leetcode"
 playground_path="$HOME/programming/temp/codewars"
+
+# NOTE: reads script.js in $playground_path by default. pass specific file if needed
 input_file=${1:-"script.js"}
 input_extension=$([[ "$input_file" = *.* ]] && echo ".${input_file#*.}" || echo '')
 
