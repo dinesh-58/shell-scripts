@@ -1,0 +1,73 @@
+#!/bin/sh
+# NOTE: depends on jq. should run on bash & zsh 
+
+repo_path="$HOME/programming/leetcode"
+playground_path="$HOME/programming/temp/codewars"
+input_file=${1:-"script.js"}
+input_extension=$([[ "$input_file" = *.* ]] && echo ".${input_file#*.}" || echo '')
+
+[ $PWD != $playground_path ] && echo "must be in $playground_path. Exiting" && exit 1
+
+if [ -z "$1" ] # check if 1st argument is empty string
+then echo "Reading $input_file. If this is the wrong file, cancel & pass proper input_file argument"
+else echo "Reading $input_file"
+fi
+
+echo -e "\nSpecify problem type:"
+echo "1) Codewars"
+echo "2) NeetCode"
+read type_id
+
+case $type_id in
+    1)
+        type_dirname="codewars"
+        echo -n "enter the challenge id or slug: "
+        read kata_id
+
+        json=$(curl "https://www.codewars.com/api/v1/code-challenges/$kata_id")
+        rank_dirname=$(echo $json | jq -r '.rank.name' | sed 's/ //')
+        slug=$(echo $json | jq -r '.slug')
+        specific_path="$repo_path/$type_dirname/$rank_dirname"
+        # INFO: for testing purposes, uncomment these two
+        # repo_path="$HOME/programming/test"
+        # specific_path="$repo_path"
+        
+        filename="$specific_path/$slug$input_extension"
+        [ ! -d $specific_path ] && echo "$specific_path doesn't exist. Exiting" && exit 1
+
+        echo -n "file $filename will be created. Confirm? [y/n] "
+        read choice
+        if ! [[ "$choice" = "y" || -z "$choice" ]]
+        then exit 1
+        fi
+
+        kata_url=$(echo $json | jq -r '.url')
+        date=$(date -I)
+
+
+        [ -e $filename ] && echo "File exists. Exiting to prevent overwriting." && exit 1
+        
+        echo -e "// link: $kata_url\n// date: $date\n" | cat - $input_file > $filename
+        echo "wrote $filename"
+        cd $repo_path
+
+        git add $filename
+        git commit -m "add today's solution"
+        git diff HEAD~
+        echo -e "\nNavigated to $repo_path. \nReview changes before pushing."
+        ;;
+
+    2)
+        type_dirname="neetcode150"
+        echo "Neetcode functionality hasn't been implemented yet :p "
+        ;;
+    *)
+        echo "invalid choice"
+        exit 1
+esac
+
+# NOTE: optional features:
+# - input url instead of id, then extract id from there?
+# - take input for language at start too. all js for now
+  # - will have to use different comment syntax based on language
+# - manage dotfiles properly, then move this to .config/shell. or just use this as submodule
