@@ -30,14 +30,14 @@ case $type_id in
         echo -n "enter the challenge id or slug: "
         read kata_id
 
-        json=$(curl "https://www.codewars.com/api/v1/code-challenges/$kata_id")
-        rank_dirname=$(echo $json | jq -r '.rank.name' | sed 's/ //')
-        slug=$(echo $json | jq -r '.slug')
+        json=$(curl "https://www.codewars.com/api/v1/code-challenges/$kata_id" | jq 'del(.description)')
+        rank_dirname=$(echo $json | jq '.rank.name' -r | sed 's/ //')
+        slug=$(echo $json | jq '.slug' -r)
         specific_path="$repo_path/$type_dirname/$rank_dirname"
         # INFO: for testing purposes, uncomment these two
         # repo_path="$HOME/programming/test"
         # specific_path="$repo_path"
-        
+
         filename="$specific_path/$slug$input_extension"
         [ ! -d $specific_path ] && echo "$specific_path doesn't exist. Exiting" && exit 1
 
@@ -47,12 +47,12 @@ case $type_id in
         then exit 1
         fi
 
-        kata_url=$(echo $json | jq -r '.url')
+        kata_url=$(echo $json | jq '.url' -r)
         date=$(date -I)
 
 
         [ -e $filename ] && echo "File exists. Exiting to prevent overwriting." && exit 1
-        
+
         echo -e "// link: $kata_url\n// date: $date\n" | cat - $input_file > $filename
         echo "wrote $filename"
         cd $repo_path
@@ -75,5 +75,5 @@ esac
 # NOTE: optional features:
 # - input url instead of id, then extract id from there?
 # - take input for language at start too. all js for now
-  # - will have to use different comment syntax based on language
+# - will have to use different comment syntax based on language
 # - manage dotfiles properly, then move this to .config/shell. or just use this as submodule
