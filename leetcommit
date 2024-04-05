@@ -1,10 +1,14 @@
 #!/bin/sh
 # NOTE: depends on jq. this should run on bash & zsh 
 
+# NOTE: if you want to cd to $repo_path, don't add this script to your path. 
+# instead, add this to your .bashrc:
+# alias leetcommit="source path/to/leetcommit"
+
 repo_path="$HOME/programming/leetcode"
 playground_path="$HOME/programming/temp/codewars"
 
-# NOTE: reads script.js in $playground_path by default. pass specific file if needed
+# reads script.js in $playground_path by default. pass specific file if needed
 input_file=${1:-"script.js"}
 input_extension=$([[ "$input_file" = *.* ]] && echo ".${input_file#*.}" || echo '')
 
