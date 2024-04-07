@@ -19,6 +19,13 @@ then echo "Reading $input_file. If this is the wrong file, cancel & pass proper 
 else echo "Reading $input_file"
 fi
 
+confirm() {
+    echo -n "$1 [y/n] "
+    read choice
+    ! [[ "$choice" = "y" || -z "$choice" ]] && exit 1
+    return 0
+}
+
 echo -e "\nSpecify problem type:"
 echo "1) Codewars"
 echo "2) NeetCode"
@@ -41,24 +48,19 @@ case $type_id in
         filename="$specific_path/$slug$input_extension"
         [ ! -d $specific_path ] && echo "$specific_path doesn't exist. Exiting" && exit 1
 
-        echo -n "file $filename will be created. Confirm? [y/n] "
-        read choice
-        if ! [[ "$choice" = "y" || -z "$choice" ]]
-        then exit 1
-        fi
+        confirm "file $filename will be created. Confirm?"
+        commmit_msg="add today's solution"
+        [ -e $filename ] && confirm "file exists. Overwrite?" && commmit_msg="modify old solution"
 
         kata_url=$(echo $json | jq '.url' -r)
         date=$(date -I)
-
-
-        [ -e $filename ] && echo "File exists. Exiting to prevent overwriting." && exit 1
 
         echo -e "// link: $kata_url\n// date: $date\n" | cat - $input_file > $filename
         echo "wrote $filename"
         cd $repo_path
 
         git add $filename
-        git commit -m "add today's solution"
+        git commit -m "$commmit_msg"
         git diff HEAD~
         echo -e "\nNavigated to $repo_path. \nReview changes before pushing."
         ;;
@@ -74,7 +76,6 @@ esac
 
 # NOTE: optional features:
 # - input url instead of id, then extract id from there?
-# - when existing file found, ask if updating old code instead of instantly exiting
 # - take input for language at start too. all js for now
 # - will have to use different comment syntax based on language
 # - manage dotfiles properly, then move this to .config/shell. or just use this as submodule
