@@ -74,6 +74,7 @@ esac
 
 # NOTE: optional features:
 # - input url instead of id, then extract id from there?
+# - when existing file found, ask if updating old code instead of instantly exiting
 # - take input for language at start too. all js for now
 # - will have to use different comment syntax based on language
 # - manage dotfiles properly, then move this to .config/shell. or just use this as submodule
